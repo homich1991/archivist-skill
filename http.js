@@ -1,17 +1,19 @@
 import { createServer } from 'node:http';
 import { readFileSync } from 'node:fs';
-import { join, extname } from 'node:path';
+import { join, extname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { homedir } from 'node:os';
 import * as storage from './storage.js';
 
 const UI_DIR = join(fileURLToPath(import.meta.url), '..', 'ui');
+const RESOLVED_UI_DIR = resolve(UI_DIR);
 const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css' };
 
 function parseBody(req) {
   return new Promise((resolve, reject) => {
     let raw = '';
     req.on('data', chunk => { raw += chunk; });
+    req.on('error', reject);
     req.on('end', () => {
       try { resolve(JSON.parse(raw || '{}')); } catch { reject(new Error('Invalid JSON')); }
     });
@@ -37,6 +39,11 @@ function dbPath() {
   return process.env.DEEP_THOUGHT_DB ?? join(homedir(), '.claude', 'storage', 'storage.db');
 }
 
+function parseLimit(raw, def = 50) {
+  const n = parseInt(raw, 10);
+  return Number.isFinite(n) && n > 0 ? Math.min(n, 500) : def;
+}
+
 export function startHttpServer(port = 4242) {
   const server = createServer(async (req, res) => {
     const url = new URL(req.url, 'http://localhost');
@@ -44,6 +51,15 @@ export function startHttpServer(port = 4242) {
     res.setHeader('access-control-allow-origin', '*');
 
     try {
+      if (req.method === 'OPTIONS') {
+        res.writeHead(204, {
+          'access-control-allow-origin': '*',
+          'access-control-allow-methods': 'GET, POST, DELETE, OPTIONS',
+          'access-control-allow-headers': 'content-type',
+        });
+        return res.end();
+      }
+
       if (req.method === 'GET' && path === '/health') {
         const ns = storage.namespaces();
         const records = ns.reduce((sum, n) => sum + n.count, 0);
@@ -60,7 +76,7 @@ export function startHttpServer(port = 4242) {
         if (!query) return reply(res, 400, { error: 'q is required' });
         const namespace = url.searchParams.get('namespace') ?? undefined;
         const scope = url.searchParams.get('scope') ?? undefined;
-        const limit = Number(url.searchParams.get('limit') ?? 50);
+        const limit = parseLimit(url.searchParams.get('limit'));
         return reply(res, 200, storage.search({ query, namespace, scope, limit }));
       }
 
@@ -70,7 +86,7 @@ export function startHttpServer(port = 4242) {
         const scope = url.searchParams.get('scope') ?? undefined;
         const since = url.searchParams.get('since') ?? undefined;
         const before = url.searchParams.get('before') ?? undefined;
-        const limit = Number(url.searchParams.get('limit') ?? 50);
+        const limit = parseLimit(url.searchParams.get('limit'));
         return reply(res, 200, storage.list({ namespace, scope, since, before, limit }));
       }
 
@@ -97,7 +113,13 @@ export function startHttpServer(port = 4242) {
       }
 
       if (req.method === 'GET') {
-        const filePath = path === '/' ? join(UI_DIR, 'index.html') : join(UI_DIR, path);
+        const filePath = path === '/'
+          ? join(RESOLVED_UI_DIR, 'index.html')
+          : join(RESOLVED_UI_DIR, path);
+        const resolved = resolve(filePath);
+        if (!resolved.startsWith(RESOLVED_UI_DIR + '/') && resolved !== resolve(join(RESOLVED_UI_DIR, 'index.html'))) {
+          return reply(res, 403, { error: 'Forbidden' });
+        }
         return serveStatic(res, filePath);
       }
 
