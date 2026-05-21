@@ -28,8 +28,9 @@ function reply(res, status, body) {
 function serveStatic(res, filePath) {
   const mime = MIME[extname(filePath)] ?? 'text/plain';
   try {
+    const content = readFileSync(filePath);
     res.writeHead(200, { 'content-type': mime });
-    res.end(readFileSync(filePath));
+    res.end(content);
   } catch {
     reply(res, 404, { error: 'Not found' });
   }
@@ -125,7 +126,7 @@ export function startHttpServer(port = 4242) {
 
       reply(res, 404, { error: 'Not found' });
     } catch (err) {
-      reply(res, 500, { error: err.message, code: 'IO_ERROR' });
+      if (!res.headersSent) reply(res, 500, { error: err.message, code: 'IO_ERROR' });
     }
   });
 
