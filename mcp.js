@@ -4,26 +4,50 @@ import * as storage from './storage.js';
 
 export const toolHandlers = {
   async deep_thought_write({ namespace, data, id, scope }) {
-    return storage.write({ namespace, data, id, scope });
+    try {
+      return await storage.write({ namespace, data, id, scope });
+    } catch (err) {
+      return { error: err.message, code: 'INVALID_INPUT' };
+    }
   },
   async deep_thought_read({ namespace, id, scope }) {
-    const record = storage.read({ namespace, id, scope });
-    if (!record) return { error: `Record '${id}' not found in namespace '${namespace}'`, code: 'NOT_FOUND' };
-    return record;
+    try {
+      const record = await storage.read({ namespace, id, scope });
+      if (!record) return { error: `Record '${id}' not found in namespace '${namespace}'`, code: 'NOT_FOUND' };
+      return record;
+    } catch (err) {
+      return { error: err.message, code: 'INVALID_INPUT' };
+    }
   },
   async deep_thought_list({ namespace, scope, filter, since, before, limit }) {
-    return storage.list({ namespace, scope, filter, since, before, limit });
+    try {
+      return await storage.list({ namespace, scope, filter, since, before, limit });
+    } catch (err) {
+      return { error: err.message, code: 'INVALID_INPUT' };
+    }
   },
   async deep_thought_search({ query, namespace, scope, limit }) {
-    return storage.search({ query, namespace, scope, limit });
+    try {
+      return await storage.search({ query, namespace, scope, limit });
+    } catch (err) {
+      return { error: err.message, code: 'INVALID_INPUT' };
+    }
   },
   async deep_thought_delete({ namespace, id }) {
-    const result = storage.remove({ namespace, id });
-    if (!result) return { error: `Record '${id}' not found in namespace '${namespace}'`, code: 'NOT_FOUND' };
-    return result;
+    try {
+      const result = await storage.remove({ namespace, id });
+      if (!result) return { error: `Record '${id}' not found in namespace '${namespace}'`, code: 'NOT_FOUND' };
+      return result;
+    } catch (err) {
+      return { error: err.message, code: 'INVALID_INPUT' };
+    }
   },
   async deep_thought_namespaces({ scope }) {
-    return storage.namespaces({ scope });
+    try {
+      return await storage.namespaces({ scope });
+    } catch (err) {
+      return { error: err.message, code: 'INVALID_INPUT' };
+    }
   },
 };
 
