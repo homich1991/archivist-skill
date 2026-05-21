@@ -50,7 +50,14 @@ function toRecord(row) {
   return { ...row, data: JSON.parse(row.data) };
 }
 
+function validateNamespace(ns) {
+  if (typeof ns !== 'string' || !/^[a-z0-9-]{1,64}$/.test(ns)) {
+    throw new Error(`Invalid namespace: "${ns}". Must be lowercase alphanumeric + hyphens, max 64 chars.`);
+  }
+}
+
 export function write({ namespace, data, id, scope = 'global' }) {
+  validateNamespace(namespace);
   const db = openDb();
   const now = new Date().toISOString();
   const recordId = id ?? generateId();
@@ -67,12 +74,14 @@ export function write({ namespace, data, id, scope = 'global' }) {
 }
 
 export function read({ namespace, id }) {
+  validateNamespace(namespace);
   const db = openDb();
   const row = db.prepare('SELECT * FROM records WHERE id = ? AND namespace = ?').get(id, namespace);
   return row ? toRecord(row) : null;
 }
 
 export function list({ namespace, scope, filter, since, before, limit = 50 }) {
+  validateNamespace(namespace);
   const db = openDb();
   const parts = ['SELECT * FROM records WHERE namespace = ?'];
   const params = [namespace];
@@ -95,6 +104,7 @@ export function list({ namespace, scope, filter, since, before, limit = 50 }) {
 }
 
 export function search({ query, namespace, scope, limit = 50 }) {
+  if (namespace !== undefined) validateNamespace(namespace);
   const db = openDb();
   const parts = [
     'SELECT r.*, bm25(records_fts) as _score FROM records_fts',
@@ -106,13 +116,19 @@ export function search({ query, namespace, scope, limit = 50 }) {
   if (scope)     { parts.push('AND r.scope = ?');     params.push(scope); }
   parts.push('ORDER BY _score LIMIT ?');
   params.push(Math.min(limit, 500));
-  return db.prepare(parts.join(' ')).all(...params).map(r => {
-    const { _score, ...rest } = r;
-    return { ...toRecord(rest), _score };
-  });
+  try {
+    return db.prepare(parts.join(' ')).all(...params).map(r => {
+      const { _score, ...rest } = r;
+      return { ...toRecord(rest), _score };
+    });
+  } catch (err) {
+    if (err.message?.includes('fts5:') || err.message?.includes('malformed')) return [];
+    throw err;
+  }
 }
 
 export function remove({ namespace, id }) {
+  validateNamespace(namespace);
   const db = openDb();
   const existing = db.prepare('SELECT id FROM records WHERE id = ? AND namespace = ?').get(id, namespace);
   if (!existing) return null;
