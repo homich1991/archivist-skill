@@ -54,10 +54,10 @@ export function write({ namespace, data, id, scope = 'global' }) {
   const db = openDb();
   const now = new Date().toISOString();
   const recordId = id ?? generateId();
-  const existing = db.prepare('SELECT id FROM records WHERE id = ?').get(recordId);
+  const existing = db.prepare('SELECT id FROM records WHERE id = ? AND namespace = ?').get(recordId, namespace);
   if (existing) {
-    db.prepare('UPDATE records SET data = ?, updated_at = ? WHERE id = ?')
-      .run(JSON.stringify(data), now, recordId);
+    db.prepare('UPDATE records SET data = ?, updated_at = ? WHERE id = ? AND namespace = ?')
+      .run(JSON.stringify(data), now, recordId, namespace);
   } else {
     db.prepare(
       'INSERT INTO records (id, namespace, scope, data, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)'
@@ -79,11 +79,17 @@ export function list({ namespace, scope, filter, since, before, limit = 50 }) {
   if (scope)  { parts.push('AND scope = ?');       params.push(scope); }
   if (since)  { parts.push('AND created_at >= ?'); params.push(since); }
   if (before) { parts.push('AND created_at < ?');  params.push(before); }
-  parts.push('ORDER BY created_at DESC LIMIT ?');
-  params.push(Math.min(limit, 500));
+  // only push LIMIT when no JS filter (filter applies after, so limiting first would truncate)
+  if (!filter) {
+    parts.push('ORDER BY created_at DESC LIMIT ?');
+    params.push(Math.min(limit, 500));
+  } else {
+    parts.push('ORDER BY created_at DESC');
+  }
   let rows = db.prepare(parts.join(' ')).all(...params).map(toRecord);
   if (filter) {
     rows = rows.filter(r => Object.entries(filter).every(([k, v]) => r.data[k] === v));
+    rows = rows.slice(0, Math.min(limit, 500)); // apply limit after filter
   }
   return rows;
 }
