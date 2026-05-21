@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Deep Thought — Personal Database</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Oxanium:wght@400;500;600;700;800&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+<header class="header">
+  <div class="header-brand">
+    <span class="header-logo">✦</span>
+    <div>
+      <div class="header-title">DEEP THOUGHT</div>
+      <div class="header-sub">Personal Database &nbsp;·&nbsp; Vol. II</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="header-stat">
+      <span class="stat-label">Total Records</span>
+      <span class="stat-value" id="total-count">—</span>
+    </div>
+    <div class="dont-panic">Don't Panic</div>
+  </div>
+</header>
+
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sidebar-head">Field Guide</div>
+    <div class="ns-list" id="ns-list"></div>
+  </aside>
+  <main class="main">
+    <div class="toolbar">
+      <div class="search-wrap">
+        <span class="search-icon">⌕</span>
+        <input class="search-input" id="search-input" type="search" placeholder="Search the known universe…" autocomplete="off" spellcheck="false">
+      </div>
+      <div class="toolbar-meta" id="toolbar-meta"></div>
+    </div>
+    <div class="records" id="records-list">
+      <div class="empty-state">
+        <span class="empty-glyph">✦</span>
+        <div class="empty-title">COMPUTING…</div>
+        <div class="empty-sub">Deep Thought is retrieving your data.<br>Please hold.</div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<footer class="footer">
+  <span>Deep Thought v2.0 &nbsp;·&nbsp; The Answer is <b>42</b></span>
+  <span>Magrathea Storage Systems™ &nbsp;·&nbsp; Sirius Cybernetics Corp.</span>
+</footer>
+
+<script type="module" src="/app.js"></script>
+</body>
+</html>
