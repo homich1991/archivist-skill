@@ -1,6 +1,10 @@
 let activeNs = null;
 let searchTimer = null;
 
+function escapeHtml(str) {
+  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
 async function apiFetch(url) {
   const res = await fetch(url);
   if (!res.ok) throw new Error(await res.text());
@@ -55,7 +59,7 @@ function renderRecords(records, metaText) {
         <span class="record-date">${r.created_at.slice(0, 10)}</span>
       </div>
       <div class="record-body">
-        <pre class="record-json">${JSON.stringify(r.data, null, 2)}</pre>
+        <pre class="record-json">${escapeHtml(JSON.stringify(r.data, null, 2)).replace(/\\n/g, '\n')}</pre>
       </div>
     </div>`).join('');
 
