@@ -1,7 +1,16 @@
 node_modules/
+
+# SQLite
 *.db
 *.db-shm
 *.db-wal
 
+# Docs (design specs, local notes)
 docs/
+
+# macOS
+.DS_Store
+
+# Local Claude Code settings override
+.claude/settings.local.json
 .idea/
