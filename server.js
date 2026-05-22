@@ -37,6 +37,7 @@ async function ensureDaemon() {
       return;
     }
   }
+  // intentional: continue in degraded mode — tools fail per-call rather than losing all tools
   process.stderr.write(`Warning: Archivist daemon failed to start on port ${PORT} within 5s\n`);
 }
 
