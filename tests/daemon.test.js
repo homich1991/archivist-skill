@@ -46,8 +46,13 @@ test('daemon starts, creates PID file, responds to /health, cleans up on SIGTERM
     child.kill('SIGTERM');
     await new Promise(r => setTimeout(r, 400));
     if (existsSync(TEST_DB)) unlinkSync(TEST_DB);
-    if (existsSync(PID_FILE)) unlinkSync(PID_FILE);
   }
 
-  assert.ok(!existsSync(PID_FILE), 'PID file was not removed after SIGTERM');
+  // PID file must be gone — the daemon's SIGTERM handler is responsible for this.
+  // Do NOT clean it up in finally above, or this assertion always passes vacuously.
+  try {
+    assert.ok(!existsSync(PID_FILE), 'PID file was not removed after SIGTERM');
+  } finally {
+    if (existsSync(PID_FILE)) unlinkSync(PID_FILE);
+  }
 });
