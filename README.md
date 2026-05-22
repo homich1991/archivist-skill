@@ -24,13 +24,18 @@ In Claude Code, run:
 
 ```
 /plugin install archivist
+/reload-plugins
 ```
 
-**3. Run the setup skill**
+**3. Start a new conversation**
+
+Skills are loaded at session start. After installing and reloading, **open a new conversation** in Claude Code before continuing — otherwise Claude won't see the archivist skill yet.
+
+**4. Run the setup skill**
 
 Ask Claude: *"install archivist"* — it will verify Node.js 22+, clone the repo, run `npm install`, and write the MCP entry to `~/.claude/settings.json` for you.
 
-**4. Restart Claude Code**
+**5. Restart Claude Code**
 
 The MCP server activates on the next session start.
 
