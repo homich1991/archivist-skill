@@ -5,7 +5,7 @@ import { homedir } from 'node:os';
 import { join, dirname } from 'node:path';
 
 function dbPath() {
-  return process.env.DEEP_THOUGHT_DB ?? join(homedir(), '.claude', 'storage', 'storage.db');
+  return process.env.ARCHIVIST_DB ?? join(homedir(), '.claude', 'storage', 'storage.db');
 }
 
 function openDb() {

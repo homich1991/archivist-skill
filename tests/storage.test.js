@@ -3,12 +3,12 @@ import assert from 'node:assert/strict';
 import { existsSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 
-process.env.DEEP_THOUGHT_DB = join(import.meta.dirname, 'test.db');
+process.env.ARCHIVIST_DB = join(import.meta.dirname, 'test.db');
 
 const { write, read, list, search, remove, namespaces } = await import('../storage.js');
 
 after(() => {
-  const p = process.env.DEEP_THOUGHT_DB;
+  const p = process.env.ARCHIVIST_DB;
   if (existsSync(p)) rmSync(p);
 });
 

@@ -1,5 +1,5 @@
 {
-  "name": "deep-thought",
+  "name": "archivist",
   "version": "0.1.0",
   "description": "Personal database MCP server — your Answer to Life, the Universe, and Everything",
   "type": "module",
@@ -7,7 +7,8 @@
   "scripts": {
     "start": "node server.js",
     "test": "node --test tests/*.test.js",
-    "install-deep-thought-mcp": "node scripts/install.js"
+    "install-archivist-mcp": "node scripts/install.js",
+    "archivist": "node scripts/daemon-cli.js"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.12.0",

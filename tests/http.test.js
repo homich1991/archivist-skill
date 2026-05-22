@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { existsSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 
-process.env.DEEP_THOUGHT_DB = join(import.meta.dirname, 'test-http.db');
+process.env.ARCHIVIST_DB = join(import.meta.dirname, 'test-http.db');
 
 const { startHttpServer } = await import('../http.js');
 const { write } = await import('../storage.js');
@@ -18,7 +18,7 @@ before(async () => {
 
 after(async () => {
   server.close();
-  const p = process.env.DEEP_THOUGHT_DB;
+  const p = process.env.ARCHIVIST_DB;
   if (existsSync(p)) rmSync(p);
 });
 

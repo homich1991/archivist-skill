@@ -21,20 +21,26 @@ const settings = readSettings();
 settings.mcpServers ??= {};
 
 if (settings.mcpServers['deep-thought']) {
-  console.log('deep-thought MCP server is already configured in ~/.claude/settings.json');
-  console.log('Entry:', JSON.stringify(settings.mcpServers['deep-thought'], null, 2));
+  console.log('Warning: old deep-thought entry found in ~/.claude/settings.json.');
+  console.log('Remove it manually, then re-run npm run install-archivist-mcp.');
+  process.exit(1);
+}
+
+if (settings.mcpServers['archivist']) {
+  console.log('archivist MCP server is already configured in ~/.claude/settings.json');
+  console.log('Entry:', JSON.stringify(settings.mcpServers['archivist'], null, 2));
   console.log('\nTo update the path, edit ~/.claude/settings.json manually.');
   process.exit(0);
 }
 
-settings.mcpServers['deep-thought'] = {
+settings.mcpServers['archivist'] = {
   command: 'node',
   args: [SERVER_PATH],
 };
 
 writeSettings(settings);
 
-console.log('✓ deep-thought added to ~/.claude/settings.json');
+console.log('✓ archivist added to ~/.claude/settings.json');
 console.log(`  Server path: ${SERVER_PATH}`);
-console.log('\nRestart Claude Code to activate the MCP server.');
+console.log('\nRestart your MCP client to activate the server.');
 console.log('Then open http://localhost:4242 to browse your data.');

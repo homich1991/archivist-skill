@@ -37,7 +37,7 @@ function serveStatic(res, filePath) {
 }
 
 function dbPath() {
-  return process.env.DEEP_THOUGHT_DB ?? join(homedir(), '.claude', 'storage', 'storage.db');
+  return process.env.ARCHIVIST_DB ?? join(homedir(), '.claude', 'storage', 'storage.db');
 }
 
 function parseLimit(raw, def = 50) {

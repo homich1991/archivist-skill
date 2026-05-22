@@ -3,12 +3,12 @@ import assert from 'node:assert/strict';
 import { existsSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 
-process.env.DEEP_THOUGHT_DB = join(import.meta.dirname, 'test-mcp.db');
+process.env.ARCHIVIST_DB = join(import.meta.dirname, 'test-mcp.db');
 
 const { toolHandlers } = await import('../mcp.js');
 
 after(() => {
-  const p = process.env.DEEP_THOUGHT_DB;
+  const p = process.env.ARCHIVIST_DB;
   if (existsSync(p)) rmSync(p);
 });
 
