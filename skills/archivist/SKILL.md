@@ -12,7 +12,18 @@ Walk the user through installing Archivist step by step. Complete each step befo
 
 ---
 
-## Step 1 — Check Node.js version
+## Step 1 — Find base directory
+
+Determine `<BASE_DIR>` using the following logic:
+
+- If the environment variable `SKILL_BASE_DIR` is set, use that value as `<BASE_DIR>`.
+- Otherwise, derive it from the skill file's own location: this SKILL.md lives at `<BASE_DIR>/skills/archivist/SKILL.md`, so go two directory levels up from the skill file to get `<BASE_DIR>`.
+
+Use the absolute, expanded path (no `~` or relative segments) for all subsequent steps.
+
+---
+
+## Step 2 — Check Node.js version
 
 Run:
 
@@ -25,50 +36,29 @@ node --version
 
 ---
 
-## Step 2 — Choose install location
+## Step 3 — Install dependencies
 
-Ask the user:
-
-> "Where would you like to install Archivist? The default is `~/archivist`. Press Enter to accept or type a different path."
-
-Use their answer as `<INSTALL_PATH>` in the steps below. If they press Enter or say nothing, use `~/archivist`.
-
----
-
-## Step 3 — Clone and install
-
-Run these commands (substitute the actual install path — expand `~` to the full home directory):
+Run:
 
 ```bash
-git clone https://github.com/homich1991/archivist-skill <INSTALL_PATH>
-cd <INSTALL_PATH>
-npm install
+npm install --prefix <BASE_DIR>
 ```
 
-If `git clone` fails because the directory already exists, tell the user and ask whether to remove it and retry, or pick a different path.
+Skip this step if `<BASE_DIR>/node_modules` already exists and `<BASE_DIR>/package.json` has not changed since last install — otherwise run it unconditionally.
 
 ---
 
-## Step 4 — Write MCP config
+## Step 4 — Configure MCP
 
-Read `~/.claude/settings.json`. If it doesn't exist, treat it as `{}`.
+Run:
 
-Add or update the `mcpServers.archivist` key with the absolute install path:
-
-```json
-{
-  "mcpServers": {
-    "archivist": {
-      "command": "node",
-      "args": ["<ABSOLUTE_INSTALL_PATH>/server.js"]
-    }
-  }
-}
+```bash
+node <BASE_DIR>/scripts/install.js <BASE_DIR>
 ```
 
-Preserve all existing keys. Write the result back to `~/.claude/settings.json`.
+This writes the `archivist` MCP server entry into `~/.claude/settings.json`, using `<BASE_DIR>` as the project root.
 
-If `mcpServers.archivist` was already present, tell the user it was updated to the new path.
+If `mcpServers.archivist` was already present, tell the user it was updated.
 
 ---
 
@@ -77,7 +67,7 @@ If `mcpServers.archivist` was already present, tell the user it was updated to t
 Run:
 
 ```bash
-node <ABSOLUTE_INSTALL_PATH>/scripts/daemon-cli.js status
+node <BASE_DIR>/scripts/daemon-cli.js status
 ```
 
 - If the output contains `status: running`: tell the user the daemon is already up.
@@ -92,12 +82,4 @@ Tell the user:
 
 > "Archivist is installed and configured. **Restart Claude Code** (or your MCP client) to activate it.
 >
-> Once running, the web UI is at **http://localhost:4242**.
->
-> You can manage the daemon any time with:
-> ```
-> npm run archivist -- status
-> npm run archivist -- stop
-> npm run archivist -- start
-> ```
-> (run these from your Archivist install directory)"
+> Once running, the web UI is at **http://localhost:4242**."
