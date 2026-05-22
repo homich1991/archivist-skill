@@ -1,53 +1,58 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
-import * as storage from './storage.js';
+
+function daemonUrl(path) {
+  const port = process.env.ARCHIVIST_PORT ?? '4242';
+  return `http://localhost:${port}${path}`;
+}
+
+async function callDaemon(method, urlPath, body) {
+  const opts = { method };
+  if (body !== undefined) {
+    opts.headers = { 'content-type': 'application/json' };
+    opts.body = JSON.stringify(body);
+  }
+  try {
+    const res = await fetch(daemonUrl(urlPath), opts);
+    return res.json();
+  } catch (err) {
+    return { error: err.message, code: 'DAEMON_ERROR' };
+  }
+}
 
 export const toolHandlers = {
   async archivist_write({ namespace, data, id, scope }) {
-    try {
-      return await storage.write({ namespace, data, id, scope });
-    } catch (err) {
-      return { error: err.message, code: 'INVALID_INPUT' };
-    }
+    return callDaemon('POST', '/api/records', { namespace, data, id, scope });
   },
   async archivist_read({ namespace, id, scope }) {
-    try {
-      const record = await storage.read({ namespace, id, scope });
-      if (!record) return { error: `Record '${id}' not found in namespace '${namespace}'`, code: 'NOT_FOUND' };
-      return record;
-    } catch (err) {
-      return { error: err.message, code: 'INVALID_INPUT' };
-    }
+    const p = new URLSearchParams({ namespace });
+    if (scope) p.set('scope', scope);
+    return callDaemon('GET', `/api/records/${id}?${p}`);
   },
   async archivist_list({ namespace, scope, filter, since, before, limit }) {
-    try {
-      return await storage.list({ namespace, scope, filter, since, before, limit });
-    } catch (err) {
-      return { error: err.message, code: 'INVALID_INPUT' };
-    }
+    const p = new URLSearchParams({ namespace });
+    if (scope) p.set('scope', scope);
+    if (since) p.set('since', since);
+    if (before) p.set('before', before);
+    if (limit != null) p.set('limit', String(limit));
+    if (filter) p.set('filter', JSON.stringify(filter));
+    return callDaemon('GET', `/api/records?${p}`);
   },
   async archivist_search({ query, namespace, scope, limit }) {
-    try {
-      return await storage.search({ query, namespace, scope, limit });
-    } catch (err) {
-      return { error: err.message, code: 'INVALID_INPUT' };
-    }
+    const p = new URLSearchParams({ q: query });
+    if (namespace) p.set('namespace', namespace);
+    if (scope) p.set('scope', scope);
+    if (limit != null) p.set('limit', String(limit));
+    return callDaemon('GET', `/api/search?${p}`);
   },
   async archivist_delete({ namespace, id }) {
-    try {
-      const result = await storage.remove({ namespace, id });
-      if (!result) return { error: `Record '${id}' not found in namespace '${namespace}'`, code: 'NOT_FOUND' };
-      return result;
-    } catch (err) {
-      return { error: err.message, code: 'INVALID_INPUT' };
-    }
+    const p = new URLSearchParams({ namespace });
+    return callDaemon('DELETE', `/api/records/${id}?${p}`);
   },
   async archivist_namespaces({ scope }) {
-    try {
-      return await storage.namespaces({ scope });
-    } catch (err) {
-      return { error: err.message, code: 'INVALID_INPUT' };
-    }
+    const p = new URLSearchParams();
+    if (scope) p.set('scope', scope);
+    return callDaemon('GET', `/api/namespaces?${p}`);
   },
 };
 

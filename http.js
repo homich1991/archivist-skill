@@ -107,11 +107,11 @@ export function startHttpServer(port = 4242) {
 
         if (req.method === 'GET') {
           const record = storage.read({ namespace, id });
-          return record ? reply(res, 200, record) : reply(res, 404, { error: 'Not found' });
+          return record ? reply(res, 200, record) : reply(res, 404, { error: `Record '${id}' not found in namespace '${namespace}'`, code: 'NOT_FOUND' });
         }
         if (req.method === 'DELETE') {
           const result = storage.remove({ namespace, id });
-          return result ? reply(res, 200, result) : reply(res, 404, { error: 'Not found' });
+          return result ? reply(res, 200, result) : reply(res, 404, { error: `Record '${id}' not found in namespace '${namespace}'`, code: 'NOT_FOUND' });
         }
       }
 

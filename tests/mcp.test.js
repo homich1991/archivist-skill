@@ -1,13 +1,23 @@
-import { test, after } from 'node:test';
+import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { existsSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 
 process.env.ARCHIVIST_DB = join(import.meta.dirname, 'test-mcp.db');
 
+const { startHttpServer } = await import('../http.js');
 const { toolHandlers } = await import('../mcp.js');
 
-after(() => {
+let server;
+
+before(async () => {
+  server = await startHttpServer(0);
+  process.env.ARCHIVIST_PORT = String(server.address().port);
+});
+
+after(async () => {
+  server.close();
+  delete process.env.ARCHIVIST_PORT;
   const p = process.env.ARCHIVIST_DB;
   if (existsSync(p)) rmSync(p);
 });
