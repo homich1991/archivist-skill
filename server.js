@@ -37,7 +37,7 @@ async function ensureDaemon() {
       return;
     }
   }
-  throw new Error(`Archivist daemon failed to start on port ${PORT} within 5s`);
+  process.stderr.write(`Warning: Archivist daemon failed to start on port ${PORT} within 5s\n`);
 }
 
 await ensureDaemon();
