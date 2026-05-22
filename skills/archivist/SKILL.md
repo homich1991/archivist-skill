@@ -58,7 +58,7 @@ node <BASE_DIR>/scripts/install.js <BASE_DIR>
 
 This writes the `archivist` MCP server entry into `~/.claude/settings.json`, using `<BASE_DIR>` as the project root.
 
-If `mcpServers.archivist` was already present, tell the user it was updated.
+If `mcpServers.archivist` was already present, `install.js` will report the existing configuration and exit without modifying it. To update the path, edit `~/.claude/settings.json` manually.
 
 ---
 
