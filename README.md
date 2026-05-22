@@ -26,7 +26,7 @@ In Claude Code, run:
 
 **3. Run the setup skill**
 
-Ask Claude: *"install archivist"* — it will walk you through cloning the repo, installing dependencies, and writing your MCP config.
+Ask Claude: *"install archivist"* — it will verify Node.js 22+, clone the repo, run `npm install`, and write the MCP entry to `~/.claude/settings.json` for you.
 
 **4. Restart Claude Code**
 
@@ -117,10 +117,12 @@ npm run archivist -- start    # start the daemon (no-op if already running)
 npm run archivist -- stop     # graceful shutdown, removes PID file
 ```
 
-Example output:
+Possible outputs:
 
 ```
-status: running  pid: 12345  port: 4242  records: 42
+status: running  pid: 12345  port: 4242  records: 42   # daemon is up
+status: stopped                                         # daemon is not running
+status: running (pid 12345, port 4242, health check failed)  # up but not responding
 ```
 
 ---
