@@ -19,7 +19,7 @@ function renderSidebar(namespaces) {
   document.getElementById('total-count').textContent = total;
 
   if (!namespaces.length) {
-    list.innerHTML = `<div class="ns-empty">No data yet.<br>Use deep_thought_write to start storing records.</div>`;
+    list.innerHTML = `<div class="ns-empty">No data yet.<br>Use archivist_write to start storing records.</div>`;
     return;
   }
   list.innerHTML = namespaces.map(n => `
@@ -102,6 +102,6 @@ loadNamespaces().catch(() => {
   document.getElementById('records-list').innerHTML = `<div class="empty-state">
     <span class="empty-glyph">✦</span>
     <div class="empty-title">CONNECTION ERROR</div>
-    <div class="empty-sub">Deep Thought is not responding.<br>Check that the server is running.</div>
+    <div class="empty-sub">Archivist is not responding.<br>Check that the daemon is running.</div>
   </div>`;
 });
