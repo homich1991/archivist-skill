@@ -101,3 +101,13 @@ test('GET /api/search?q=X returns matching records', async () => {
   assert.ok(Array.isArray(body));
   assert.ok(body.some(r => r.data.content.includes('unicorn')));
 });
+
+test('GET /api/records?filter= filters by field value', async () => {
+  write({ namespace: 'ns-filter', data: { status: 'done' } });
+  write({ namespace: 'ns-filter', data: { status: 'pending' } });
+  const filter = encodeURIComponent(JSON.stringify({ status: 'done' }));
+  const { status, body } = await get(`/api/records?namespace=ns-filter&filter=${filter}`);
+  assert.equal(status, 200);
+  assert.equal(body.length, 1);
+  assert.equal(body[0].data.status, 'done');
+});

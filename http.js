@@ -88,7 +88,9 @@ export function startHttpServer(port = 4242) {
         const since = url.searchParams.get('since') ?? undefined;
         const before = url.searchParams.get('before') ?? undefined;
         const limit = parseLimit(url.searchParams.get('limit'));
-        return reply(res, 200, storage.list({ namespace, scope, since, before, limit }));
+        const filterRaw = url.searchParams.get('filter');
+        const filter = filterRaw ? JSON.parse(filterRaw) : undefined;
+        return reply(res, 200, storage.list({ namespace, scope, since, before, limit, filter }));
       }
 
       if (req.method === 'POST' && path === '/api/records') {
