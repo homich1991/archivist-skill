@@ -1,8 +1,10 @@
 # Archivist
 
+![Archivist](assets/banner.png)
+
 > *"The Answer to Life, the Universe, and Everything"*
 
-A personal database MCP server that gives any AI agent persistent, queryable storage across sessions. Store meeting notes, people profiles, decisions, research — anything you want your agent to remember.
+A personal database MCP server that gives any AI agent persistent, queryable storage across sessions. Store meeting notes, decisions, research — anything you want your agent to remember.
 
 ---
 
