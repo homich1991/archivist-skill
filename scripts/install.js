@@ -4,7 +4,9 @@ import { homedir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 
 const SETTINGS_PATH = join(homedir(), '.claude', 'settings.json');
-const SERVER_PATH = resolve(join(fileURLToPath(import.meta.url), '..', '..', 'server.js'));
+const SERVER_PATH = process.argv[2]
+  ? resolve(join(process.argv[2], 'server.js'))
+  : resolve(join(fileURLToPath(import.meta.url), '..', '..', 'server.js'));
 
 function readSettings() {
   if (!existsSync(SETTINGS_PATH)) return {};
