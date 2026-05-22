@@ -82,4 +82,12 @@ Tell the user:
 
 > "Archivist is installed and configured. **Restart Claude Code** (or your MCP client) to activate it.
 >
-> Once running, the web UI is at **http://localhost:4242**."
+> Once running, the web UI is at **http://localhost:4242**.
+>
+> You can manage the daemon any time with:
+> ```
+> npm run archivist -- status
+> npm run archivist -- stop
+> npm run archivist -- start
+> ```
+> (run these from `<BASE_DIR>`)"
