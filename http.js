@@ -37,7 +37,7 @@ function serveStatic(res, filePath) {
 }
 
 function dbPath() {
-  return process.env.ARCHIVIST_DB ?? join(homedir(), '.claude', 'storage', 'storage.db');
+  return process.env.ARCHIVIST_DB ?? join(homedir(), '.archivist', 'storage.db');
 }
 
 function parseLimit(raw, def = 50) {

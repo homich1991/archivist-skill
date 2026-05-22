@@ -8,7 +8,7 @@ A personal database MCP server that gives any AI agent persistent, queryable sto
 
 ---
 
-## Install via Claude Code marketplace
+## Install — Claude Code
 
 The fastest way to get started:
 
@@ -36,9 +36,7 @@ The MCP server activates on the next session start.
 
 ---
 
-## Install manually
-
-If you prefer to set things up yourself:
+## Install — Other MCP clients
 
 **1. Clone and install**
 
@@ -48,15 +46,7 @@ cd archivist
 npm install
 ```
 
-**2. Add to your MCP client**
-
-For Claude Code:
-
-```bash
-npm run install-archivist-mcp
-```
-
-This writes the MCP entry to `~/.claude/settings.json`. For other clients, add manually:
+**2. Add to your client's MCP config**
 
 ```json
 {
@@ -68,6 +58,16 @@ This writes the MCP entry to `~/.claude/settings.json`. For other clients, add m
   }
 }
 ```
+
+Config file locations for common clients:
+
+| Client | Config file |
+|---|---|
+| **Cursor** | `~/.cursor/mcp.json` |
+| **Windsurf** | `~/.codeium/windsurf/mcp_config.json` |
+| **Cline** | VS Code settings → Cline → MCP Servers |
+| **Continue** | `~/.continue/config.json` → `mcpServers` |
+| **Other** | See your client's MCP documentation |
 
 **3. Restart your MCP client**
 
@@ -172,7 +172,7 @@ Namespaces are created automatically on first write.
 
 | Variable | Default | Description |
 |---|---|---|
-| `ARCHIVIST_DB` | `~/.claude/storage/storage.db` | SQLite database path |
+| `ARCHIVIST_DB` | `~/.archivist/storage.db` | SQLite database path |
 | `ARCHIVIST_PORT` | `4242` | HTTP daemon port |
 
 Set these in your shell profile or prefix them to the start command:
@@ -195,7 +195,7 @@ scripts/
 ├── install.js     — npm run install-archivist-mcp
 └── daemon-cli.js  — npm run archivist -- start|stop|status
 skills/
-└── archivist/     — Claude Code marketplace skill (interactive setup)
+└── archivist/     — Interactive setup skill (Claude Code marketplace)
 ```
 
 **Two-process model:** `server.js` is short-lived — one instance per MCP session, exits when the session ends. `daemon.js` is long-lived — one instance per machine. All MCP tool calls flow through `server.js` → HTTP → `daemon.js` → SQLite. This means the database is always accessed through a single process, with no locking conflicts between concurrent agent sessions.

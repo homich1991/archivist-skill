@@ -1,7 +1,7 @@
 ---
 name: archivist
 description: >
-  Archivist setup assistant — installs the Archivist MCP server and configures it in your
+  Archivist setup assistant — installs the Archivist MCP server and configures it in
   Claude Code settings. Use when the user says "install archivist", "set up archivist",
   "configure archivist MCP", or wants to get Archivist running.
 ---
