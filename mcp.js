@@ -3,14 +3,14 @@ import { z } from 'zod';
 import * as storage from './storage.js';
 
 export const toolHandlers = {
-  async deep_thought_write({ namespace, data, id, scope }) {
+  async archivist_write({ namespace, data, id, scope }) {
     try {
       return await storage.write({ namespace, data, id, scope });
     } catch (err) {
       return { error: err.message, code: 'INVALID_INPUT' };
     }
   },
-  async deep_thought_read({ namespace, id, scope }) {
+  async archivist_read({ namespace, id, scope }) {
     try {
       const record = await storage.read({ namespace, id, scope });
       if (!record) return { error: `Record '${id}' not found in namespace '${namespace}'`, code: 'NOT_FOUND' };
@@ -19,21 +19,21 @@ export const toolHandlers = {
       return { error: err.message, code: 'INVALID_INPUT' };
     }
   },
-  async deep_thought_list({ namespace, scope, filter, since, before, limit }) {
+  async archivist_list({ namespace, scope, filter, since, before, limit }) {
     try {
       return await storage.list({ namespace, scope, filter, since, before, limit });
     } catch (err) {
       return { error: err.message, code: 'INVALID_INPUT' };
     }
   },
-  async deep_thought_search({ query, namespace, scope, limit }) {
+  async archivist_search({ query, namespace, scope, limit }) {
     try {
       return await storage.search({ query, namespace, scope, limit });
     } catch (err) {
       return { error: err.message, code: 'INVALID_INPUT' };
     }
   },
-  async deep_thought_delete({ namespace, id }) {
+  async archivist_delete({ namespace, id }) {
     try {
       const result = await storage.remove({ namespace, id });
       if (!result) return { error: `Record '${id}' not found in namespace '${namespace}'`, code: 'NOT_FOUND' };
@@ -42,7 +42,7 @@ export const toolHandlers = {
       return { error: err.message, code: 'INVALID_INPUT' };
     }
   },
-  async deep_thought_namespaces({ scope }) {
+  async archivist_namespaces({ scope }) {
     try {
       return await storage.namespaces({ scope });
     } catch (err) {
@@ -52,10 +52,10 @@ export const toolHandlers = {
 };
 
 export function createMcpServer() {
-  const server = new McpServer({ name: 'deep-thought', version: '1.0.0' });
+  const server = new McpServer({ name: 'archivist', version: '1.0.0' });
 
   server.tool(
-    'deep_thought_write',
+    'archivist_write',
     "Saves a record to the personal database. Use this whenever the user wants to remember something for later — a meeting summary, a person's details, an event, a decision, or any structured data. The namespace groups related records (e.g. \"meetings\", \"team\", \"events\"). Returns the saved record including its auto-generated ID.",
     {
       namespace: z.string().describe('Bucket name, e.g. "meetings", "team", "events"'),
@@ -63,23 +63,23 @@ export function createMcpServer() {
       id: z.string().optional().describe('Optional explicit ID; omit to auto-generate'),
       scope: z.string().optional().describe('global (default) or absolute project path'),
     },
-    async (args) => ({ content: [{ type: 'text', text: JSON.stringify(await toolHandlers.deep_thought_write(args)) }] })
+    async (args) => ({ content: [{ type: 'text', text: JSON.stringify(await toolHandlers.archivist_write(args)) }] })
   );
 
   server.tool(
-    'deep_thought_read',
+    'archivist_read',
     'Fetches a single record by its ID. Use when you already know the exact record ID (e.g. from a previous list or search result) and need its full content.',
     {
       namespace: z.string(),
       id: z.string(),
       scope: z.string().optional(),
     },
-    async (args) => ({ content: [{ type: 'text', text: JSON.stringify(await toolHandlers.deep_thought_read(args)) }] })
+    async (args) => ({ content: [{ type: 'text', text: JSON.stringify(await toolHandlers.archivist_read(args)) }] })
   );
 
   server.tool(
-    'deep_thought_list',
-    'Lists records in a namespace, newest first. Use for browsing or filtering by date range or field values — e.g. "show me all meetings from last month" or "list team members with role=engineer". Prefer deep_thought_search when the user describes content rather than known field values.',
+    'archivist_list',
+    'Lists records in a namespace, newest first. Use for browsing or filtering by date range or field values — e.g. "show me all meetings from last month" or "list team members with role=engineer". Prefer archivist_search when the user describes content rather than known field values.',
     {
       namespace: z.string(),
       scope: z.string().optional(),
@@ -88,11 +88,11 @@ export function createMcpServer() {
       before: z.string().optional().describe('ISO date — records created before this date'),
       limit: z.number().optional().describe('Max records to return, default 50, max 500'),
     },
-    async (args) => ({ content: [{ type: 'text', text: JSON.stringify(await toolHandlers.deep_thought_list(args)) }] })
+    async (args) => ({ content: [{ type: 'text', text: JSON.stringify(await toolHandlers.archivist_list(args)) }] })
   );
 
   server.tool(
-    'deep_thought_search',
+    'archivist_search',
     'Full-text search across stored records. Use when the user wants to find something by content — e.g. "find the meeting where we discussed the API design" or "what do I have about John". Can search within a specific namespace or across everything. Returns results ranked by relevance.',
     {
       query: z.string().describe('Full-text search query'),
@@ -100,26 +100,26 @@ export function createMcpServer() {
       scope: z.string().optional(),
       limit: z.number().optional(),
     },
-    async (args) => ({ content: [{ type: 'text', text: JSON.stringify(await toolHandlers.deep_thought_search(args)) }] })
+    async (args) => ({ content: [{ type: 'text', text: JSON.stringify(await toolHandlers.archivist_search(args)) }] })
   );
 
   server.tool(
-    'deep_thought_delete',
+    'archivist_delete',
     'Deletes a record permanently by ID. Always confirm with the user before calling this — deletion cannot be undone.',
     {
       namespace: z.string(),
       id: z.string(),
     },
-    async (args) => ({ content: [{ type: 'text', text: JSON.stringify(await toolHandlers.deep_thought_delete(args)) }] })
+    async (args) => ({ content: [{ type: 'text', text: JSON.stringify(await toolHandlers.archivist_delete(args)) }] })
   );
 
   server.tool(
-    'deep_thought_namespaces',
+    'archivist_namespaces',
     "Lists all namespaces with record counts and last-updated timestamps. Use when the user asks what's stored, wants an overview of their data, or before a search to help scope the query.",
     {
       scope: z.string().optional(),
     },
-    async (args) => ({ content: [{ type: 'text', text: JSON.stringify(await toolHandlers.deep_thought_namespaces(args)) }] })
+    async (args) => ({ content: [{ type: 'text', text: JSON.stringify(await toolHandlers.archivist_namespaces(args)) }] })
   );
 
   return server;
