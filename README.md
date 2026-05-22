@@ -6,22 +6,68 @@ A personal database MCP server that gives any AI agent persistent, queryable sto
 
 ---
 
-## What it does
+## Install via Claude Code marketplace
 
-Archivist runs as a singleton background daemon. Any MCP client (Claude Code, Cursor, Cline, custom agents) spawns the same `server.js` entry point — the first one starts the daemon, all subsequent ones connect to it. All sessions share one SQLite database and one web UI.
+The fastest way to get started:
 
-Six tools are exposed:
+**1. Add this repo as a marketplace source**
 
-| Tool | What it does |
-|------|-------------|
-| `archivist_write` | Save a record (any JSON object) to a named namespace |
-| `archivist_read` | Fetch a single record by ID |
-| `archivist_list` | Browse records in a namespace, with optional date/field filters |
-| `archivist_search` | Full-text search across all stored records |
-| `archivist_delete` | Remove a record permanently |
-| `archivist_namespaces` | List all namespaces with record counts |
+In Claude Code, run:
 
-A built-in web UI at `http://localhost:4242` lets you browse and search your data visually.
+```
+/plugin marketplace add https://github.com/homich1991/archivist-skill.git
+```
+
+**2. Install the skill**
+
+```
+/plugin install archivist
+```
+
+**3. Run the setup skill**
+
+Ask Claude: *"install archivist"* — it will walk you through cloning the repo, installing dependencies, and writing your MCP config.
+
+**4. Restart Claude Code**
+
+The MCP server activates on the next session start.
+
+---
+
+## Install manually
+
+If you prefer to set things up yourself:
+
+**1. Clone and install**
+
+```bash
+git clone https://github.com/homich1991/archivist-skill archivist
+cd archivist
+npm install
+```
+
+**2. Add to your MCP client**
+
+For Claude Code:
+
+```bash
+npm run install-archivist-mcp
+```
+
+This writes the MCP entry to `~/.claude/settings.json`. For other clients, add manually:
+
+```json
+{
+  "mcpServers": {
+    "archivist": {
+      "command": "node",
+      "args": ["/absolute/path/to/archivist/server.js"]
+    }
+  }
+}
+```
+
+**3. Restart your MCP client**
 
 ---
 
@@ -32,56 +78,56 @@ A built-in web UI at `http://localhost:4242` lets you browse and search your dat
 
 ---
 
-## Installation
+## MCP Tools
 
-**1. Clone and install dependencies**
+Six tools are available to any connected agent:
 
-```bash
-git clone <repo-url> archivist
-cd archivist
-npm install
-```
-
-**2. Add to your MCP client**
-
-```bash
-npm run install-archivist-mcp
-```
-
-This writes the MCP server entry to `~/.claude/settings.json`. For other clients, add manually:
-
-```json
-{
-  "mcpServers": {
-    "archivist": {
-      "command": "node",
-      "args": ["/absolute/path/to/server.js"]
-    }
-  }
-}
-```
-
-**3. Restart your MCP client**
-
-The session process starts automatically and wakes the daemon on first use.
-
-**4. Verify**
-
-Ask your agent: *"What MCP tools do you have available?"*
-
-You should see `archivist_write`, `archivist_read`, `archivist_list`, `archivist_search`, `archivist_delete`, `archivist_namespaces`.
+| Tool | What it does |
+|------|-------------|
+| `archivist_write` | Save a record (any JSON object) to a named namespace |
+| `archivist_read` | Fetch a single record by ID |
+| `archivist_list` | Browse records in a namespace, with optional date/field filters |
+| `archivist_search` | Full-text search across all stored records |
+| `archivist_delete` | Remove a record permanently |
+| `archivist_namespaces` | List all namespaces with record counts |
 
 ---
 
-## Daemon management
+## Daemon
 
-The daemon runs in the background and persists after all agent sessions close.
+Archivist runs as a **singleton background daemon** — one process per machine, shared by all MCP sessions.
+
+**Auto-start:** When an MCP session starts, `server.js` pings the daemon's health endpoint. If it doesn't respond within 1 second, `server.js` spawns `daemon.js` and waits up to 5 seconds for it to come up. Subsequent sessions skip the spawn and connect directly.
+
+**Persistence:** The daemon keeps running after all MCP sessions disconnect. It stops only when you explicitly shut it down (see CLI Commands below) or the machine restarts.
+
+**PID file:** `~/.archivist/archivist.pid` — created on start, removed on clean shutdown.
+
+**Port:** Defaults to `4242`. Change with `ARCHIVIST_PORT` (see Configuration).
+
+---
+
+## CLI Commands
+
+Run from your Archivist install directory:
 
 ```bash
-npm run archivist -- status   # show: running/stopped, pid, port, record count
-npm run archivist -- stop     # stop the daemon
-npm run archivist -- start    # start the daemon manually
+npm run archivist -- status   # show running/stopped, PID, port, record count
+npm run archivist -- start    # start the daemon (no-op if already running)
+npm run archivist -- stop     # graceful shutdown, removes PID file
 ```
+
+Example output:
+
+```
+status: running  pid: 12345  port: 4242  records: 42
+```
+
+---
+
+## Web UI
+
+Open **http://localhost:4242** while Archivist is running. Browse all namespaces, view records, and run full-text searches — no agent required.
 
 ---
 
@@ -89,7 +135,7 @@ npm run archivist -- start    # start the daemon manually
 
 ### Storing data
 
-Just tell your agent what to remember:
+Tell your agent what to remember:
 
 > "Remember that Alice is our lead designer, based in Berlin, focused on mobile."
 
@@ -113,42 +159,22 @@ Records are grouped into namespaces — think of them as folders. Common example
 - `team` — people profiles
 - `decisions` — architectural and product decisions
 - `research` — notes and links
-- `events` — calendar and planning items
 
 Namespaces are created automatically on first write.
 
-### Web UI
-
-Open `http://localhost:4242` while Archivist is running. Shows all namespaces, records, and full-text search. The daemon must be running for the UI to work.
-
 ---
 
-## Data storage
+## Configuration
 
-Records are stored in a SQLite database at:
+| Variable | Default | Description |
+|---|---|---|
+| `ARCHIVIST_DB` | `~/.claude/storage/storage.db` | SQLite database path |
+| `ARCHIVIST_PORT` | `4242` | HTTP daemon port |
 
-```
-~/.claude/storage/storage.db
-```
-
-To use a custom path:
-
-```bash
-export ARCHIVIST_DB=/path/to/your.db
-```
-
-To use a custom port:
+Set these in your shell profile or prefix them to the start command:
 
 ```bash
-export ARCHIVIST_PORT=5000
-```
-
----
-
-## Running tests
-
-```bash
-npm test
+ARCHIVIST_PORT=5000 npm run archivist -- start
 ```
 
 ---
@@ -156,12 +182,24 @@ npm test
 ## Architecture
 
 ```
-server.js          — MCP entry point (per session, per agent): ensures daemon, then stdio MCP
-daemon.js          — Background HTTP + SQLite daemon (one instance, persists across sessions)
+server.js          — MCP entry point (per session, per agent): ensures daemon is up, then serves stdio MCP
+daemon.js          — Background HTTP + SQLite process (one instance, persists across sessions)
 ├── http.js        — REST API (/api/*) + static file server (ui/)
-├── storage.js     — SQLite CRUD + FTS5
+├── storage.js     — SQLite CRUD + FTS5 full-text search
 └── ui/            — Browser UI (plain HTML + JS, no build step)
 scripts/
 ├── install.js     — npm run install-archivist-mcp
 └── daemon-cli.js  — npm run archivist -- start|stop|status
+skills/
+└── archivist/     — Claude Code marketplace skill (interactive setup)
+```
+
+**Two-process model:** `server.js` is short-lived — one instance per MCP session, exits when the session ends. `daemon.js` is long-lived — one instance per machine. All MCP tool calls flow through `server.js` → HTTP → `daemon.js` → SQLite. This means the database is always accessed through a single process, with no locking conflicts between concurrent agent sessions.
+
+---
+
+## Running tests
+
+```bash
+npm test
 ```
