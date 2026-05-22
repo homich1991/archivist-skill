@@ -1,0 +1,17 @@
+{
+  "name": "archivist-skill",
+  "owner": {
+    "name": "Roman Meerson"
+  },
+  "metadata": {
+    "description": "Archivist MCP server setup skill — installs and configures the Archivist personal database for Claude Code."
+  },
+  "plugins": [
+    {
+      "name": "archivist",
+      "source": "./skills/archivist",
+      "description": "Installs and configures the Archivist MCP server — your personal database for Claude Code sessions.",
+      "category": "productivity"
+    }
+  ]
+}

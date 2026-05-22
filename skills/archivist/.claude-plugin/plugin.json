@@ -1,0 +1,12 @@
+{
+  "name": "archivist",
+  "description": "Installs and configures the Archivist MCP server — your personal database for Claude Code sessions.",
+  "version": "0.1.0",
+  "author": {
+    "name": "Roman Meerson"
+  },
+  "license": "MIT",
+  "repository": "https://github.com/homich1991/archivist-skill",
+  "homepage": "https://github.com/homich1991/archivist-skill",
+  "keywords": ["claude-code", "mcp", "database", "memory", "archivist", "productivity"]
+}
