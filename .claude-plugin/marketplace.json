@@ -9,9 +9,10 @@
   "plugins": [
     {
       "name": "archivist",
-      "source": "./skills/archivist",
+      "source": ".",
       "description": "Installs and configures the Archivist MCP server — your personal database for Claude Code sessions.",
-      "category": "productivity"
+      "category": "productivity",
+      "install": "node scripts/install.js"
     }
   ]
 }
